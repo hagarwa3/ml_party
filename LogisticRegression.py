@@ -2,6 +2,7 @@
 Logistic Regression (Multi-class Linear Classifier)
 '''
 
+from __future__ import print_function
 import numpy as np
 
 
@@ -67,35 +68,82 @@ class LogisticRegression:
 
   def __init__(self, degree):
     self.degree = degree;
+    self.theta_reg = []
+    self.X_reg = []
 
 
   def fit(self, X, y):
-    X_reg = mapFeature(X[:,0], X[:,1], 6)
-    print 'X.shape =', X.shape, ', y.shape =', y.shape
-    print 'X_reg.shape =', X_reg.shape
+    self.X_reg = mapFeature(X[:,0], X[:,1], self.degree)
+    #X_reg = X
+    print('X.shape =', X.shape, ', y.shape =', y.shape)
+    print('X_reg.shape =', self.X_reg.shape)
 
     # Initialize fitting parameters
-    initial_theta = np.zeros(X_reg.shape[1])
+    initial_theta = np.ones(self.X_reg.shape[1])*0.5
 
     # Set regularization parameter lambda to 1
     reg_lambda = 1
 
-    cost = computeCostReg(initial_theta, X_reg, y, reg_lambda)
-    grad = computeGradReg(initial_theta, X_reg, y, reg_lambda)
+    cost = computeCostReg(initial_theta, self.X_reg, y, reg_lambda)
+    grad = computeGradReg(initial_theta, self.X_reg, y, reg_lambda)
 
-    print 'Cost at initial theta (zeros): ', cost
+    print('Cost at initial theta (zeros): ', cost)
 
-    res = optim.fmin_tnc(func=computeCostReg, x0=initial_theta, fprime=computeGradReg, args=(X_reg, y, reg_lambda))
-    theta_reg = res[0]
-    cost_reg = computeCostReg(theta_reg, X_reg, y, reg_lambda)
+    import scipy.optimize as optim
+    res = optim.fmin_tnc(func=computeCostReg, x0=initial_theta, fprime=computeGradReg, args=(self.X_reg, y, reg_lambda))
+    #res = optim.fmin_cg(f=computeCostReg, x0=initial_theta, fprime=computeGradReg, args=(self.X_reg, y, reg_lambda))
+    self.theta_reg = res[0]
+    cost_reg = computeCostReg(self.theta_reg, self.X_reg, y, reg_lambda)
 
     # Print theta to screen
-    print 'Cost at theta found by fminunc: ', cost_reg
-    print 'theta: ', theta_reg
+    print('Cost at theta found by fminunc: ', cost_reg)
+    print('theta shape: ', self.theta_reg.shape)
 
 
-  def predict(self, X):
-    # Compute accuracy on our training set
-    p = zip(predict(theta_reg, X_reg), y)
+  def predict(self, X_test, y_test):
+    probabilities = sigmoid(np.dot(mapFeature(X_test[:,0], X_test[:,1], self.degree), self.theta_reg))
+    predictions = [1 if p >= 0.5 else 0 for p in probabilities]
+
+    # Compute accuracy on training set
+    p = zip(predictions, y_test)
     results = [1 if a == b else 0 for (a, b) in p]
-    print 'Train Accuracy: ', float(sum(results)) / float(len(results))
+    print('Train Accuracy: ', float(sum(results)) / float(len(results)))
+
+
+def main():
+  from scipy.io import loadmat
+  print('Loading matrix data...')
+  #data = loadmat('datasets/digits_coursera.mat') # training data stored in arrays X, y
+  dataReg = np.loadtxt('datasets/ex2data2.txt', delimiter=',')
+  np.random.shuffle(dataReg)
+  X = dataReg[:100, 0:2]
+  y = dataReg[:100, 2]
+  X_test = dataReg[100:, 0:2]
+  y_test = dataReg[100:, 2]
+
+  '''Xy_pair = np.hstack((data['X'],data['y']))
+  print('Shuffling data...')
+  np.random.shuffle(Xy_pair)
+  
+  X = Xy_pair[:4000,:-1]
+  y = Xy_pair[:4000,-1].reshape(-1)
+
+  X_test = Xy_pair[4000:,:-1]
+  y_test = Xy_pair[4000:,-1].reshape(-1)'''
+
+  print('X: ', X.shape, '| Y: ', y.shape, '\nX_test: ', \
+      X_test.shape, '| y_test: ', y_test.shape)
+
+  #print('y orig: ', np.unique(y))
+  #y[y == 10] = 0
+  #y_test[y_test == 10] = 0
+  #print('y fixed: ', np.unique(y))
+
+  log_clf = LogisticRegression(degree=6)
+  log_clf.fit(X, y)
+
+  log_clf.predict(X_test, y_test)
+
+
+if __name__ == '__main__':
+  main()
