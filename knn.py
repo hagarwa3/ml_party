@@ -3,7 +3,7 @@ import random
 import math
 import operator
 
-def loadDataset(filename, split, trainingSet=[] , testSet=[]):
+def loadDataset(filename, split, trainingSet=[] , testSet=[]):          #in case user wanted to split one set into testing and training
     csvfile = open(filename, 'rb')
     lines = csv.reader(csvfile)
     dataset = list(lines)
@@ -16,13 +16,13 @@ def loadDataset(filename, split, trainingSet=[] , testSet=[]):
             testSet.append(dataset[x])
  
 
-def distance(a, b, length):
+def distance(a, b, length):             #euclidian distance calculator (Manhattan distance would make an interesting experiment)
     distance = 0
     for x in range(length):
         distance += pow((a[x] - b[x]), 2)
     return math.sqrt(distance)
 
-def neighbors(train, test_elem, k):
+def neighbors(train, test_elem, k):         #try a kd-tree based implementation next, maybe
     dists = []
     for x in train:
         dists.append((x,distance(test_elem, x, len(test_elem)-1)))
@@ -61,5 +61,5 @@ def main(filename_train, filename_test, k):
 		predictions.append(result)
     return predictions
 
-#print str(main('C:/Users/Harshit Agarwal/Desktop/py scripts/1.csv', 'C:/Users/Harshit Agarwal/Desktop/py scripts/2.csv', 3))
+#main('filepath(.csv)', 'filepath(.csv)', k(number of neighbors))
     
