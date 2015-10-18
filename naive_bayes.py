@@ -57,7 +57,7 @@ def summarizeByClass(dataset):
 	return summaries
 
 
-def gaussianProbability(x, mean, stdev):
+def gaussianProbability(x, mean, stdev):        #should try binomial probability and poisson? probability too
     if stdev!=0:
 	exponent = math.exp(-(math.pow(x-mean,2)/(2*math.pow(stdev,2))))
 	return (1 / (math.sqrt(2*math.pi) * stdev)) * exponent
@@ -101,5 +101,4 @@ def main(trainfile, testfile):
 	# test model
 	predictions = getPredictions(summaries, dataset2)
 	return predictions
-
-#print str(main('C:/Users/Harshit Agarwal/Desktop/py scripts/1.csv', 'C:/Users/Harshit Agarwal/Desktop/py scripts/2.csv'))
+#main('train_filepath.csv', 'test_filepath.csv')
